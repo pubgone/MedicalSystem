@@ -1,0 +1,37 @@
+[
+    {
+      "id": "q001",
+      "query": "高血压患者每日食盐摄入量应该是多少？",
+      "category": "diet",
+      "department": "cardiology",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q002",
+      "query": "二甲双胍的主要副作用有哪些？",
+      "category": "medication",
+      "department": "endocrinology",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q003",
+      "query": "儿童发烧多少度需要去医院？",
+      "category": "emergency",
+      "department": "pediatrics",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q004",
+      "query": "冠心病的介入治疗适应症是什么？",
+      "category": "treatment",
+      "department": "cardiology",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q005",
+      "query": "糖尿病患者的饮食注意事项有哪些？",
+      "category": "diet",
+      "department": "endocrinology",
+      "difficulty": "medium"
+    }
+  ]

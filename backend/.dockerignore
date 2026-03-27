@@ -1,0 +1,18 @@
+# backend/.dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.log
+.git
+.env
+.vscode/
+.idea/
+*.swp
+*.swo
+chroma_db/
+logs/

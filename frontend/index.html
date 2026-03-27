@@ -1,0 +1,256 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医疗 RAG 系统</title>
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <!-- ✅ 新增：Markdown 渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🏥 医疗 RAG</h1>
+            </div>
+            <nav class="menu">
+                <button class="menu-item active" data-page="chat">
+                    <span>💬</span> 智能问答
+                </button>
+                <button class="menu-item" data-page="docs">
+                    <span>📚</span> 文档管理
+                </button>
+                <button class="menu-item" data-page="evaluation">
+                    <span>📊</span> 系统测评
+                <button class="menu-item" data-page="stats">
+                    <span>📊</span> 系统统计
+                </button>
+                <button class="menu-item" data-page="settings">
+                    <span>⚙️</span> 系统设置
+                </button>
+            </nav>
+            <div class="status">
+                <div class="status-indicator" id="systemStatus"></div>
+                <span id="statusText">连接中...</span>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 聊天页面 -->
+            <div class="page active" id="chatPage">
+                <div class="chat-header">
+                    <h2>医疗知识问答</h2>
+                    <div class="chat-settings">
+                        <select id="retrievalMode">
+                            <option value="hybrid_rerank">混合检索 + Rerank</option>
+                            <option value="hybrid">混合检索</option>
+                            <option value="vector">向量检索</option>
+                        </select>
+                        <input type="number" id="topK" value="5" min="1" max="20" title="检索数量">
+                    </div>
+                </div>
+                
+                <div class="chat-container" id="chatContainer">
+                    <div class="welcome-message">
+                        <h3>👋 欢迎使用医疗 RAG 系统</h3>
+                        <p>请输入您的医疗相关问题，我将基于权威文献为您解答</p>
+                        <div class="example-questions">
+                            <span class="example-tag" onclick="sendExample('高血压患者应该如何控制血压？')">高血压控制</span>
+                            <span class="example-tag" onclick="sendExample('二甲双胍有什么副作用？')">药物副作用</span>
+                            <span class="example-tag" onclick="sendExample('糖尿病饮食注意事项')">糖尿病饮食</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea 
+                        id="queryInput" 
+                        placeholder="请输入您的问题..." 
+                        rows="3"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button class="send-btn" onclick="sendMessage()" id="sendBtn">
+                        <span>发送</span>
+                        <span class="loading" style="display:none;">⏳</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 文档管理页面 -->
+            <div class="page" id="docsPage">
+                <h2>文档管理</h2>
+                <div class="upload-area">
+                    <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md">
+                    <button onclick="uploadDocuments()">上传文档</button>
+                </div>
+                <div class="doc-list" id="docList"></div>
+            </div>
+
+            <!-- ✅ 新增测评页面 -->
+            <div class="page" id="evaluationPage">
+                <div class="page-header">
+                    <h2>📊 系统测评</h2>
+                    <div class="header-actions">
+                        <button class="btn-primary" onclick="startBatchEvaluation()">
+                            🚀 开始批量评估
+                        </button>
+                        <button class="btn-secondary" onclick="refreshReports()">
+                            📋 刷新报告
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 测评概览 -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>总评估次数</h3>
+                        <div class="value" id="metricTotalEval">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>平均得分</h3>
+                        <div class="value" id="metricAvgScore">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>测试问题数</h3>
+                        <div class="value" id="metricQuestionCount">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>最新评估</h3>
+                        <div class="value" id="metricLatestEval">-</div>
+                    </div>
+                </div>
+
+                <!-- 测试问题管理 -->
+                <div class="section">
+                    <div class="section-header">
+                        <h3>📝 测试问题集</h3>
+                        <button class="btn-small" onclick="showAddQuestionModal()">
+                            ➕ 添加问题
+                        </button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>问题</th>
+                                <th>科室</th>
+                                <th>难度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionsTableBody">
+                            <tr><td colspan="5" class="empty">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 评估报告列表 -->
+                <div class="section">
+                    <h3>📋 历史评估报告</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>评估 ID</th>
+                                <th>状态</th>
+                                <th>平均得分</th>
+                                <th>问题数</th>
+                                <th>时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr><td colspan="6" class="empty">暂无报告</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 统计页面 -->
+            <div class="page" id="statsPage">
+                <h2>系统统计</h2>
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+
+            <!-- 设置页面 -->
+            <div class="page" id="settingsPage">
+                <h2>系统设置</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>API 地址</label>
+                        <input type="text" id="apiUrl" value="/api">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key（可选）</label>
+                        <input type="password" id="apiKey" placeholder="请输入 API Key">
+                    </div>
+                    <button onclick="saveSettings()">保存设置</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- ✅ 添加问题模态框 -->
+    <div class="modal" id="addQuestionModal">
+        <div class="modal-content">
+            <h3>➕ 添加测试问题</h3>
+            <form id="addQuestionForm">
+                <div class="form-group">
+                    <label>问题 ID *</label>
+                    <input type="text" id="questionId" required placeholder="如：q006">
+                </div>
+                <div class="form-group">
+                    <label>问题内容 *</label>
+                    <textarea id="questionContent" required rows="3" placeholder="请输入问题"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>科室</label>
+                        <select id="questionDepartment">
+                            <option value="cardiology">心血管内科</option>
+                            <option value="endocrinology">内分泌科</option>
+                            <option value="pediatrics">儿科</option>
+                            <option value="general">全科</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>难度</label>
+                        <select id="questionDifficulty">
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>分类</label>
+                    <input type="text" id="questionCategory" placeholder="如：diagnosis, medication">
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeAddQuestionModal()">取消</button>
+                <button class="btn-primary" onclick="submitNewQuestion()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ 评估详情模态框 -->
+    <div class="modal" id="evaluationDetailModal">
+        <div class="modal-content modal-large">
+            <h3>📊 评估详情</h3>
+            <div id="evaluationDetailContent"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeEvaluationDetail()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/app.js"></script>
+    <script src="static/js/evaluation.js"></script>
+</body>
+</html>
