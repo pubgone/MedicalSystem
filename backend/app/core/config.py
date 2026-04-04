@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     DEVICE: str = "cuda"
     
     # 向量库配置
-    CHROMA_PERSIST_DIR: str = "./chroma_db"
+    CHROMA_PERSIST_DIR: str = "backend/chroma_db"
     COLLECTION_NAME: str = "medical_knowledge_v1"
     
     # RAG 配置
