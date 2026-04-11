@@ -7,19 +7,12 @@ __pycache__/
 *.pyd
 #初始化文件
 config/
-# 数据集
-dataset/
+
 # 日志、运行记录
 logs/
 
 models/
-test/
 .yml
 .ipynb
 
-Dockerfile
-
 output/
-chroma_db/
-chroma_langchain_db/
-backend/chroma_db/

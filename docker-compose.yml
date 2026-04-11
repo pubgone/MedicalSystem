@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # 医疗 RAG 后端服务
+  rag-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medical-rag-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # 应用配置
+      - APP_NAME=医疗 RAG 系统
+      - APP_VERSION=1.0.0
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - PORT=8000
+
+      # LLM 配置
+      - LLM_NAME=qwen-plus
+      - LLM_ENDPOINT=https://dashscope.aliyuncs.com/compatible-mode/v1
+      - LLM_KEY=${LLM_KEY:-your-api-key-here}
+
+      # 模型配置
+      - EMBEDDING_MODEL=BAAI/bge-small-zh
+      - RERANK_MODEL=BAAI/bge-reranker-base
+      - DEVICE=cpu
+
+      # 向量库配置
+      - CHROMA_PERSIST_DIR=/app/chroma_db
+      - COLLECTION_NAME=medical_knowledge_v1
+
+      # RAG 配置
+      - MAX_CONTEXT_LENGTH=4000
+      - DEFAULT_TOP_K=5
+      - DEFAULT_RERANK_TOP_K=3
+
+      # 安全配置
+      - API_KEY=${API_KEY:-1234}
+      - ALLOWED_ORIGINS=["*"]
+
+    volumes:
+      # 挂载向量数据库（持久化）
+      - ./chroma_db:/app/chroma_db
+      # 挂载前端静态文件
+      - ./frontend:/app/frontend:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
