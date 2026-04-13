@@ -29,12 +29,12 @@ class Settings(BaseSettings):
     ALLOWED_METHODS: List[str] = ["*"]
     ALLOWED_HEADERS: List[str] = ["*"]
     
-    # 模型配置
+    # 模型配置（敏感信息通过环境变量或 .env 文件配置）
     EMBEDDING_MODEL: str = "BAAI/bge-small-zh"
     RERANK_MODEL: str = "BAAI/bge-reranker-base"
     LLM_NAME: str = "qwen-plus"
     LLM_ENDPOINT: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    LLM_KEY: str = "sk-e4ef591b02444b37973055a090f0308d"
+    LLM_KEY: Optional[str] = None  # 必须通过环境变量或 .env 设置
     DEVICE: str = "cuda"
     
     # 向量库配置

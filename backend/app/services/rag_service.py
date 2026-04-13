@@ -86,7 +86,7 @@ class RAGService:
             logger.info(f"🔄 初始化 LLM: endpoint={settings.LLM_ENDPOINT}")
 
             # 检查 API Key
-            api_key = settings.LLM_KEY or os.getenv("sk-e4ef591b02444b37973055a090f0308d")
+            api_key = settings.LLM_KEY or os.getenv("LLM_KEY")
             if not api_key:
                 logger.warning("⚠️  未配置 DASHSCOPE_API_KEY，使用 Mock LLM")
                 from langchain_community.llms import FakeListLLM
